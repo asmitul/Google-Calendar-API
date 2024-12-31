@@ -1,4 +1,4 @@
-# Google Calendar API 
+# Google Calendar API
 
 基于 FastAPI 的 Google Calendar API 服务。
 
