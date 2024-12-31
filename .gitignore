@@ -172,3 +172,9 @@ cython_debug/
 
 # Google Calendar API credentials
 token.json
+
+# Credentials
+credentials.json
+*.pyc
+__pycache__/
+.env
