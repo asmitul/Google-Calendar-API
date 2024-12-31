@@ -44,11 +44,15 @@ jobs:
 
       - name: Run Docker container and create credentials
         run: |
-          # 首先启动容器
+          # 在主机上创建 credentials.json
+          echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" | base64 -d > /root/data/${{ env.CONTAINER_NAME }}/credentials.json
+          
+          # 运行容器并挂载 credentials.json
           docker run -d \
             --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
             -v /root/data/${{ env.CONTAINER_NAME }}:/app/data \
+            -v /root/data/${{ env.CONTAINER_NAME }}/credentials.json:/app/credentials.json \
             -e APP_NAME=${{ vars.APP_NAME }} \
             -e SAVE_CREDENTIALS=true \
             -p 8009:8009 \
@@ -57,9 +61,6 @@ jobs:
           
           # 等待容器完全启动
           sleep 5
-          
-          # 使用 base64 处理 JSON 内容
-          docker exec ${{ env.CONTAINER_NAME }} /bin/sh -c 'echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" | base64 -d > /app/credentials.json'
 
       - name: Verify container is running
         run: |
