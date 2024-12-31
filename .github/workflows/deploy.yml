@@ -58,8 +58,8 @@ jobs:
           # 等待容器完全启动
           sleep 5
           
-          # 在容器内创建 credentials.json，使用 printf 来确保正确处理 JSON
-          docker exec ${{ env.CONTAINER_NAME }} /bin/sh -c 'printf "%s" "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > /app/credentials.json'
+          # 使用 base64 处理 JSON 内容
+          docker exec ${{ env.CONTAINER_NAME }} /bin/sh -c 'echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" | base64 -d > /app/credentials.json'
 
       - name: Verify container is running
         run: |
