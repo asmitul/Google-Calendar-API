@@ -42,28 +42,32 @@ jobs:
             echo "No existing container found"
           fi
 
-      - name: Create config file
+      - name: Run Docker container and create credentials
         run: |
-          echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > credentials.json
-
-      - name: Run Docker container
-        run: |
+          # 首先启动容器
           docker run -d \
             --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
             -v /root/data/${{ env.CONTAINER_NAME }}:/app/data \
-            -v "$(pwd)/credentials.json:/app/credentials.json" \
             -e APP_NAME=${{ vars.APP_NAME }} \
             -e SAVE_CREDENTIALS=true \
             -p 8009:8009 \
             --cpus="0.30" \
             ${{ env.DOCKER_IMAGE }}
+          
+          # 等待容器完全启动
+          sleep 5
+          
+          # 在容器内创建 credentials.json
+          docker exec ${{ env.CONTAINER_NAME }} /bin/sh -c 'echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > /credentials.json'
 
       - name: Verify container is running
         run: |
             sleep 10
             if [ "$(docker ps -q -f name=${{ env.CONTAINER_NAME }})" ]; then
                 echo "Container is running"
+                # 验证 credentials.json 是否创建成功
+                docker exec ${{ env.CONTAINER_NAME }} test -f /app/credentials.json && echo "credentials.json created successfully" || echo "Failed to create credentials.json"
             else
                 echo "Container failed to start"
                 exit 1
