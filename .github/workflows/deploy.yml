@@ -59,7 +59,7 @@ jobs:
           sleep 5
           
           # 在容器内创建 credentials.json
-          docker exec ${{ env.CONTAINER_NAME }} /bin/sh -c 'echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > /credentials.json'
+          docker exec ${{ env.CONTAINER_NAME }} /bin/sh -c 'echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > /app/credentials.json'
 
       - name: Verify container is running
         run: |
