@@ -44,7 +44,7 @@ jobs:
 
       - name: Create config file
         run: |
-          echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > google_client_config.json
+          echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > credentials.json
 
       - name: Run Docker container
         run: |
@@ -52,9 +52,8 @@ jobs:
             --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
             -v /root/data/${{ env.CONTAINER_NAME }}:/app/data \
-            -v "$(pwd)/google_client_config.json:/app/google_client_config.json" \
+            -v "$(pwd)/credentials.json:/app/credentials.json" \
             -e APP_NAME=${{ vars.APP_NAME }} \
-            -e GOOGLE_CLIENT_CONFIG_PATH=/app/google_client_config.json \
             -e SAVE_CREDENTIALS=true \
             -p 8009:8009 \
             --cpus="0.30" \
@@ -69,8 +68,3 @@ jobs:
                 echo "Container failed to start"
                 exit 1
             fi
-
-      - name: Cleanup config file
-        if: always()
-        run: |
-          rm -f google_client_config.json
