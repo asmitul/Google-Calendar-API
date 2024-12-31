@@ -10,6 +10,9 @@ jobs:
   deploy:
     runs-on: self-hosted
 
+    env:
+      BOT_NAME: ${{ vars.BOT_NAME || 'calendar-bot' }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,61 +37,45 @@ jobs:
           pip install -r requirements.txt
 
       - name: Build Docker image
-        env:
-          DOCKER_IMAGE: ${{ vars.BOT_NAME }}:latest
         run: |
-          if [ -z "$DOCKER_IMAGE" ]; then
-            echo "Error: DOCKER_IMAGE is not set. Please set the BOT_NAME repository variable."
-            exit 1
-          fi
-          docker build -t ${DOCKER_IMAGE} .
+          IMAGE_NAME="${BOT_NAME}:latest"
+          echo "Building Docker image: $IMAGE_NAME"
+          docker build -t $IMAGE_NAME .
 
       - name: Stop and remove old Docker container
-        env:
-          CONTAINER_NAME: ${{ vars.BOT_NAME }}
         run: |
-          if [ -z "$CONTAINER_NAME" ]; then
-            echo "Error: CONTAINER_NAME is not set. Please set the BOT_NAME repository variable."
-            exit 1
-          fi
-          # Check if container exists and is running
-          if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+          echo "Checking container: $BOT_NAME"
+          if docker ps -a --format '{{.Names}}' | grep -q "^${BOT_NAME}$"; then
             echo "Stopping and removing existing container..."
-            docker stop ${CONTAINER_NAME} || true
-            docker rm ${CONTAINER_NAME} || true
+            docker stop ${BOT_NAME} || true
+            docker rm ${BOT_NAME} || true
           else
             echo "No existing container found"
           fi
 
       - name: Run Docker container
-        env:
-          DOCKER_IMAGE: ${{ vars.BOT_NAME }}:latest
-          CONTAINER_NAME: ${{ vars.BOT_NAME }}
         run: |
-          if [ -z "$CONTAINER_NAME" ] || [ -z "$DOCKER_IMAGE" ]; then
-            echo "Error: Required variables are not set. Please set the BOT_NAME repository variable."
-            exit 1
-          fi
+          IMAGE_NAME="${BOT_NAME}:latest"
+          echo "Starting container: $BOT_NAME with image: $IMAGE_NAME"
           docker run -d \
-            --name ${CONTAINER_NAME} \
+            --name ${BOT_NAME} \
             --restart unless-stopped \
-            -v /root/data/${CONTAINER_NAME}:/app/data \
-            -e BOT_NAME=${{ vars.BOT_NAME }} \
+            -v /root/data/${BOT_NAME}:/app/data \
+            -e BOT_NAME=${BOT_NAME} \
             -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
             -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
             -e GOOGLE_PROJECT_ID=${{ secrets.GOOGLE_PROJECT_ID }} \
             -p 8009:8009 \
             --cpus="0.30" \
-            ${DOCKER_IMAGE}
+            ${IMAGE_NAME}
 
       - name: Verify container is running
-        env:
-          CONTAINER_NAME: ${{ vars.BOT_NAME }}
         run: |
-            sleep 10
-            if [ "$(docker ps -q -f name=${CONTAINER_NAME})" ]; then
-                echo "Container is running"
-            else
-                echo "Container failed to start"
-                exit 1
-            fi
+          sleep 10
+          if [ "$(docker ps -q -f name=${BOT_NAME})" ]; then
+            echo "Container ${BOT_NAME} is running"
+          else
+            echo "Container ${BOT_NAME} failed to start"
+            docker logs ${BOT_NAME}
+            exit 1
+          fi
