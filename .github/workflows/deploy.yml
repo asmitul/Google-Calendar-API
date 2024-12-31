@@ -44,6 +44,9 @@ jobs:
 
       - name: Run Docker container and create credentials
         run: |
+          # 在主机上创建目标目录
+          mkdir -p /root/data/${{ env.CONTAINER_NAME }}
+          
           # 在主机上创建 credentials.json
           echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" | base64 -d > /root/data/${{ env.CONTAINER_NAME }}/credentials.json
           
