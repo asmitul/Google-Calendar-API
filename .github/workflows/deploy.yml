@@ -11,20 +11,11 @@ jobs:
     runs-on: self-hosted
 
     env:
-      BOT_NAME: ${{ vars.BOT_NAME || 'calendar-bot' }}
-
+      DOCKER_IMAGE: ${{ vars.BOT_NAME }}
+      CONTAINER_NAME: ${{ vars.BOT_NAME }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      # 在构建 Docker 镜像之前设置凭据
-      - name: Set up credentials
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_PROJECT_ID: ${{ secrets.GOOGLE_PROJECT_ID }}
-        run: |
-          echo "{\"installed\":{\"client_id\":\"$GOOGLE_CLIENT_ID\",\"project_id\":\"$GOOGLE_PROJECT_ID\",\"auth_uri\":\"https://accounts.google.com/o/oauth2/auth\",\"token_uri\":\"https://oauth2.googleapis.com/token\",\"auth_provider_x509_cert_url\":\"https://www.googleapis.com/oauth2/v1/certs\",\"client_secret\":\"$GOOGLE_CLIENT_SECRET\",\"redirect_uris\":[\"http://localhost\"]}}" > credentials.json
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -38,44 +29,36 @@ jobs:
 
       - name: Build Docker image
         run: |
-          IMAGE_NAME="${BOT_NAME}:latest"
-          echo "Building Docker image: $IMAGE_NAME"
-          docker build -t $IMAGE_NAME .
+          docker build -t ${{ env.DOCKER_IMAGE }} .
 
       - name: Stop and remove old Docker container
         run: |
-          echo "Checking container: $BOT_NAME"
-          if docker ps -a --format '{{.Names}}' | grep -q "^${BOT_NAME}$"; then
+          # Check if container exists and is running
+          if docker ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
             echo "Stopping and removing existing container..."
-            docker stop ${BOT_NAME} || true
-            docker rm ${BOT_NAME} || true
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            docker rm ${{ env.CONTAINER_NAME }} || true
           else
             echo "No existing container found"
           fi
 
       - name: Run Docker container
         run: |
-          IMAGE_NAME="${BOT_NAME}:latest"
-          echo "Starting container: $BOT_NAME with image: $IMAGE_NAME"
           docker run -d \
-            --name ${BOT_NAME} \
+            --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
-            -v /root/data/${BOT_NAME}:/app/data \
-            -e BOT_NAME=${BOT_NAME} \
-            -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-            -e GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
-            -e GOOGLE_PROJECT_ID=${{ secrets.GOOGLE_PROJECT_ID }} \
-            -p 8009:8009 \
+            -v /root/data/${{ env.CONTAINER_NAME }}:/app/data \
+            -e BOT_NAME=${{ vars.BOT_NAME }} \
+            -e GOOGLE_CLIENT_CONFIG=${{ secrets.GOOGLE_CLIENT_CONFIG }} \
+            -p 8008:8008 \
             --cpus="0.30" \
-            ${IMAGE_NAME}
-
+            ${{ env.DOCKER_IMAGE }}
       - name: Verify container is running
         run: |
-          sleep 10
-          if [ "$(docker ps -q -f name=${BOT_NAME})" ]; then
-            echo "Container ${BOT_NAME} is running"
-          else
-            echo "Container ${BOT_NAME} failed to start"
-            docker logs ${BOT_NAME}
-            exit 1
-          fi
+            sleep 10
+            if [ "$(docker ps -q -f name=${{ env.CONTAINER_NAME }})" ]; then
+                echo "Container is running"
+            else
+                echo "Container failed to start"
+                exit 1
+            fi
