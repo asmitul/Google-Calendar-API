@@ -47,8 +47,10 @@ jobs:
           # 在主机上创建目标目录
           mkdir -p /root/data/${{ env.CONTAINER_NAME }}
           
-          # 在主机上创建 credentials.json
-          echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > /root/data/${{ env.CONTAINER_NAME }}/credentials.json
+          # 在主机上创建 credentials.json，确保多行内容正确写入
+          cat <<EOF > /root/data/${{ env.CONTAINER_NAME }}/credentials.json
+          ${{ secrets.GOOGLE_CLIENT_CONFIG }}
+          EOF
           
           # 运行容器并挂载 credentials.json
           docker run -d \
@@ -64,6 +66,10 @@ jobs:
           
           # 等待容器完全启动
           sleep 5
+          
+          # 验证 credentials.json 是否正确创建
+          ls -la /root/data/${{ env.CONTAINER_NAME }}/credentials.json
+          cat /root/data/${{ env.CONTAINER_NAME }}/credentials.json
 
       - name: Verify container is running
         run: |
