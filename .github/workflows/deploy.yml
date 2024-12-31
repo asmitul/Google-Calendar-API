@@ -48,7 +48,7 @@ jobs:
           mkdir -p /root/data/${{ env.CONTAINER_NAME }}
           
           # 在主机上创建 credentials.json
-          echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" | base64 -d > /root/data/${{ env.CONTAINER_NAME }}/credentials.json
+          echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > /root/data/${{ env.CONTAINER_NAME }}/credentials.json
           
           # 运行容器并挂载 credentials.json
           docker run -d \
