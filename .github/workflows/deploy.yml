@@ -42,18 +42,24 @@ jobs:
             echo "No existing container found"
           fi
 
+      - name: Create config file
+        run: |
+          echo "${{ secrets.GOOGLE_CLIENT_CONFIG }}" > google_client_config.json
+
       - name: Run Docker container
         run: |
           docker run -d \
             --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
             -v /root/data/${{ env.CONTAINER_NAME }}:/app/data \
+            -v "$(pwd)/google_client_config.json:/app/google_client_config.json" \
             -e APP_NAME=${{ vars.APP_NAME }} \
-            -e GOOGLE_CLIENT_CONFIG=${{ secrets.GOOGLE_CLIENT_CONFIG }} \
+            -e GOOGLE_CLIENT_CONFIG_PATH=/app/google_client_config.json \
             -e SAVE_CREDENTIALS=true \
             -p 8009:8009 \
             --cpus="0.30" \
             ${{ env.DOCKER_IMAGE }}
+
       - name: Verify container is running
         run: |
             sleep 10
@@ -63,3 +69,8 @@ jobs:
                 echo "Container failed to start"
                 exit 1
             fi
+
+      - name: Cleanup config file
+        if: always()
+        run: |
+          rm -f google_client_config.json
