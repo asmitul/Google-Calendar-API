@@ -171,5 +171,4 @@ cython_debug/
 .pypirc
 
 # Google Calendar API credentials
-credentials.json
 token.json
