@@ -11,8 +11,8 @@ jobs:
     runs-on: self-hosted
 
     env:
-      DOCKER_IMAGE: ${{ vars.BOT_NAME }}
-      CONTAINER_NAME: ${{ vars.BOT_NAME }}
+      DOCKER_IMAGE: ${{ vars.APP_NAME }}
+      CONTAINER_NAME: ${{ vars.APP_NAME }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
             --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
             -v /root/data/${{ env.CONTAINER_NAME }}:/app/data \
-            -e BOT_NAME=${{ vars.BOT_NAME }} \
+            -e APP_NAME=${{ vars.APP_NAME }} \
             -p 8009:8009 \
             --cpus="0.30" \
             ${{ env.DOCKER_IMAGE }}
