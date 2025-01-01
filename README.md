@@ -34,3 +34,13 @@ pip install -r requirements.txt
 ```bash
 uvicorn app.main:app --port 8009 --reload
 ```
+
+## 认证设置
+
+1. 从 Google Cloud Console 下载 OAuth 2.0 客户端凭据文件，并将其重命名为 `credentials.json` 放在 `app/data/` 目录下。
+
+2. 首次运行时，程序会提供一个 URL。请复制该 URL 并在浏览器中打开。
+
+3. 完成 Google 授权后，您会获得一个授权码。将该授权码复制并粘贴回终端。
+
+4. 认证完成后，凭据会被保存在 `app/data/token.pickle` 文件中，后续请求将自动使用该凭据。
