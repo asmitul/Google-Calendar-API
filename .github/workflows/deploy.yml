@@ -47,7 +47,7 @@ jobs:
           docker run -d \
             --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
-            -v /data/${{ env.CONTAINER_NAME }}:/app/data \
+            -v /root/data/google-calendar-api/credentials.json:/app/data/credentials.json \
             -e APP_NAME=${{ vars.APP_NAME }} \
             -p 8009:8009 \
             --cpus="0.30" \
