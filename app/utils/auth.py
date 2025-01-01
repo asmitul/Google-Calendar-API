@@ -24,8 +24,12 @@ async def get_credentials():
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 CREDENTIALS_PATH, SCOPES)
-            # 使用 run_console 替代 run_local_server
-            creds = flow.run_console()
+            # 使用 run_local_server 但指定 port=8088
+            creds = flow.run_local_server(
+                port=8088,
+                success_message='认证成功！您可以关闭此窗口。',
+                open_browser=False
+            )
             
         # 保存凭据以供下次使用
         with open(TOKEN_PATH, 'wb') as token:

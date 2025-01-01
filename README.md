@@ -37,10 +37,22 @@ uvicorn app.main:app --port 8009 --reload
 
 ## 认证设置
 
-1. 从 Google Cloud Console 下载 OAuth 2.0 客户端凭据文件，并将其重命名为 `credentials.json` 放在 `app/data/` 目录下。
+1. 从 Google Cloud Console 下载 OAuth 2.0 客户端凭据文件，并将其重命名为 `credentials.json` 放在 `data/` 目录下。
 
-2. 首次运行时，程序会提供一个 URL。请复制该 URL 并在浏览器中打开。
+2. 确保在 Google Cloud Console 中添加以下授权重定向 URI：
+   ```
+   http://localhost:8088/
+   ```
 
-3. 完成 Google 授权后，您会获得一个授权码。将该授权码复制并粘贴回终端。
+3. 首次运行服务器时，需要完成一次性的认证流程：
+   - 服务器会启动一个本地认证服务器在端口 8088
+   - 在本地浏览器中访问：http://your-server-ip:8088
+   - 完成 Google 授权流程
+   - 认证成功后，凭据会自动保存到 `app/data/token.pickle`
 
-4. 认证完成后，凭据会被保存在 `app/data/token.pickle` 文件中，后续请求将自动使用该凭据。
+4. 后续请求将自动使用保存的凭据，除非凭据过期需要重新认证。
+
+注意：
+- 确保服务器的 8088 端口可访问
+- 确保 app/data 目录存在且有正确的读写权限
+- 首次认证后，正常的 API 请求将使用 8009 端口
