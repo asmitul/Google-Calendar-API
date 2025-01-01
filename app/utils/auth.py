@@ -18,19 +18,14 @@ async def get_credentials(force_refresh: bool = False) -> Credentials:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            # 在生产环境中使用环境变量
-            if os.getenv("GOOGLE_CLIENT_CONFIG"):
-                client_config = json.loads(os.getenv("GOOGLE_CLIENT_CONFIG"))
-            else:
-                # 本地开发环境使用文件
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials.json", SCOPES
-                )
-                creds = flow.run_local_server(port=0)
+            # 本地开发环境使用文件
+            flow = InstalledAppFlow.from_client_secrets_file(
+                "/app/data/credentials.json", SCOPES
+            )
+            creds = flow.run_local_server(port=0)
         
         # 保存凭证
-        if os.getenv("SAVE_CREDENTIALS", "false").lower() == "true":
-            with open("token.json", "w") as token:
-                token.write(creds.to_json())
+        with open("/app/data/token.json", "w") as token:
+            token.write(creds.to_json())
     
     return creds 

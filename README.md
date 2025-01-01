@@ -14,7 +14,6 @@
    - 下载 credentials.json
 
 3. 配置 GitHub Secrets
-   - 添加 GOOGLE_CLIENT_CONFIG (credentials.json 的内容)
    - 添加 APP_NAME (应用名称)
 
 4. 部署
