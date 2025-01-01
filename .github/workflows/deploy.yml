@@ -47,7 +47,7 @@ jobs:
           docker run -d \
             --name ${{ env.CONTAINER_NAME }} \
             --restart unless-stopped \
-            -v /root/data/${{ env.CONTAINER_NAME }}:/app/data \
+            -v /data/${{ env.CONTAINER_NAME }}:/app/data \
             -e APP_NAME=${{ vars.APP_NAME }} \
             -p 8009:8009 \
             --cpus="0.30" \
