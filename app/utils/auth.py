@@ -7,7 +7,7 @@ from google.auth.transport.requests import Request
 SCOPES = ['https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/tasks']
 # 修改凭据文件的路径
 TOKEN_PATH = 'app/data/token.pickle'
-CREDENTIALS_PATH = 'app/data/credentials.json'
+CREDENTIALS_PATH = 'data/credentials.json'
 
 async def get_credentials():
     creds = None
